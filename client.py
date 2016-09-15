@@ -68,17 +68,19 @@ def process(timestamp, values):
     print("Received data")
     # TODO: Compute the average
 
-    global sumX += values[0]
-    global sumY += values[1]
-    global sumZ += values[2]
-    global counter += 1
+    global sumX, sumY, sumZ, counter
+
+    sumX += values[0]
+    sumY += values[1]
+    sumZ += values[2]
+    counter += 1
 
     if (counter >= 100):
         print ("Average x: {}\nAverage y: {}\nAverage z: {}".format(float(sumX/counter), float(sumY/counter), float(sumZ/counter)))
-        global sumX = 0
-        global sumY = 0
-        global sumZ = 0
-        global counter = 0
+        sumX = 0
+        sumY = 0
+        sumZ = 0
+        counter = 0
 
     return
 
