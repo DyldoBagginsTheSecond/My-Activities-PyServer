@@ -2,15 +2,15 @@
 """
 Created on Wed Sep  7 15:34:11 2016
 
-Assignment A0 : Data Collection
+Assignment A1 : Step Detection
 
 @author: cs390mb
 
-This Python script receives incoming data through the server and
-passes it to the process() method on a separate thread. Your job
-is to complete the process() method.
+This Python script receives incoming accelerometer data through the 
+server, detects step events and sends them back to the server for 
+visualization/notifications.
 
-Refer to the assignment details at goo.gl/U3zzE0. For a beginner's
+Refer to the assignment details at ... For a beginner's 
 tutorial on coding in Python, see goo.gl/aZNg0q.
 
 """
@@ -22,84 +22,43 @@ import threading
 import numpy as np
 
 # TODO: Replace the string with your user ID
-user_id = "a9.34.40.69.36.97.99.8b.3a.23"
+user_id = "-1"
 
-sumX = 0
-sumY = 0
-sumZ = 0
-counter = 0
-
-logFile = open('accelData.log', 'a')
-
-def process(timestamp, values):
-    """
-    Process incoming accelerometer data.
-
-    You will implement this method in assignment A0. All you need to do
-    is average the incoming values along each axis and print the averages
-    to the console.
-
-    You can do this by maintaining a sum variable for each axis and a counter.
-
-    This method is running on its own thread, therefore if you use any global
-    variables, you must declare them outside of the method and then re-declare
-    them global within the scope of the method. For instance, if you wish to
-    modify the same sumX in all calls of this method, use
-
-        global sumX
-
-    This should be done within the method, but the sumX must already be defined
-    and initialized outside the method scope.
-
-    To increment the counter, you can NOT use counter++. It's invalid Python
-    syntax. But you can use
-        counter += 1
-    or
-        counter = counter + 1
-
-    Use the print method to print to the console. You can use the + operator
-    to concatenate strings, or you can use the .format string method. Here
-    is a simple example:
-
-        print("My name is {} and I am the TA for {}".format("Sean", "390MB"))
-
-    Each set of brackets represents a replaceable value.
-
-    """
-
-    print("Received data")
-    # TODO: Compute the average
-
-    logFile.write("{}:{}:{}:{}\n".format(timestamp, values[0], values[1], values[2]))
-
-    global sumX, sumY, sumZ, counter
-
-    sumX += values[0]
-    sumY += values[1]
-    sumZ += values[2]
-    counter += 1
-
-    if (counter >= 100):
-        print ("Average x: {}\nAverage y: {}\nAverage z: {}".format(float(sumX/counter), float(sumY/counter), float(sumZ/counter)))
-        sumX = 0
-        sumY = 0
-        sumZ = 0
-        counter = 0
-
-    return
-
-
-
-#################   Server Connection Code  ####################
+count = 0
 
 '''
     This socket is used to send data back through the data collection server.
-    It is used to complete the authentication. It may also be used to send
-    data or notifications back to the phone, but we will not be using that
+    It is used to complete the authentication. It may also be used to send 
+    data or notifications back to the phone, but we will not be using that 
     functionality in this assignment.
 '''
 send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 send_socket.connect(("none.cs.umass.edu", 9999))
+
+def onStepDetected(timestamp):
+    """
+    Notifies the client that a step has been detected.
+    """
+    send_socket.send(json.dumps({'user_id' : user_id, 'sensor_type' : 'SENSOR_SERVER_MESSAGE', 'message' : 'SENSOR_STEP', 'data': {'timestamp' : timestamp}}) + "\n")
+
+def detectSteps(timestamp, filteredValues):
+    """
+    Accelerometer-based step detection algorithm.
+    
+    In assignment A1, you will implement your step detection algorithm. 
+    This may be functionally equivalent to your Java step detection 
+    algorithm if you like. Remember to use the global keyword if you 
+    would like to access global variables such as counters or buffers. 
+    When a step has been detected, call the onStepDetected method, passing 
+    in the timestamp.
+    """
+    
+    # TODO: Step detection algorithm
+    return
+    
+    
+
+#################   Server Connection Code  ####################
 
 '''
     This socket is used to receive data from the data collection server
@@ -116,7 +75,7 @@ msg_acknowledge_id = "ACK"
 def authenticate(sock):
     """
     Authenticates the user by performing a handshake with the data collection server.
-
+    
     If it fails, it will raise an appropriate exception.
     """
     message = sock.recv(256).strip()
@@ -133,13 +92,13 @@ def authenticate(sock):
     except:
         print("Authentication failed!")
         raise Exception("Wait timed out. Failed to receive authentication response from server.")
-
+        
     if (message.startswith(msg_acknowledge_id)):
         ack_id = message.split(",")[1]
     else:
         print("Authentication failed!")
         raise Exception("Expected message with prefix '{}' from server, received {}".format(msg_acknowledge_id, message))
-
+    
     if (ack_id == user_id):
         print("Authentication successful.")
         sys.stdout.flush()
@@ -152,16 +111,16 @@ try:
     print("Authenticating user for receiving data...")
     sys.stdout.flush()
     authenticate(receive_socket)
-
+    
     print("Authenticating user for sending data...")
     sys.stdout.flush()
     authenticate(send_socket)
-
+    
     print("Successfully connected to the server! Waiting for incoming data...")
     sys.stdout.flush()
-
+        
     previous_json = ''
-
+        
     while True:
         try:
             message = receive_socket.recv(1024).strip()
@@ -180,12 +139,12 @@ try:
                     x=data['data']['x']
                     y=data['data']['y']
                     z=data['data']['z']
-
-                    processThread = threading.Thread(target=process, args=(t,[x,y,z]))
+                    
+                    processThread = threading.Thread(target=detectSteps, args=(t,[x,y,z]))
                     processThread.start()
-
+                
             sys.stdout.flush()
-        except KeyboardInterrupt:
+        except KeyboardInterrupt: 
             # occurs when the user presses Ctrl-C
             print("User Interrupt. Quitting...")
             break
@@ -193,17 +152,17 @@ try:
             # ignore exceptions, such as parsing the json
             # if a connection timeout occurs, also ignore and try again. Use Ctrl-C to stop
             # but make sure the error is displayed so we know what's going on
-            if (e.message != "timed out"):  # ignore timeout exceptions completely
+            if (e.message != "timed out"):  # ignore timeout exceptions completely       
                 print(e)
             pass
-except KeyboardInterrupt:
+except KeyboardInterrupt: 
     # occurs when the user presses Ctrl-C
     print("User Interrupt. Quitting...")
 finally:
     print >>sys.stderr, 'closing socket for receiving data'
     receive_socket.shutdown(socket.SHUT_RDWR)
     receive_socket.close()
-
+    
     print >>sys.stderr, 'closing socket for sending data'
     send_socket.shutdown(socket.SHUT_RDWR)
     send_socket.close()
