@@ -22,9 +22,13 @@ import threading
 import numpy as np
 
 # TODO: Replace the string with your user ID
-user_id = "-1"
+user_id = "a9.34.40.69.36.97.99.8b.3a.23"
 
 count = 0
+
+# step detection
+dataBuffer = []
+THRESHOLD_WINDOW = 50
 
 '''
     This socket is used to send data back through the data collection server.
@@ -42,6 +46,43 @@ def onStepDetected(timestamp):
     send_socket.send(json.dumps({'user_id' : user_id, 'sensor_type' : 'SENSOR_SERVER_MESSAGE', 'message' : 'SENSOR_STEP', 'data': {'timestamp' : timestamp}}) + "\n")
 
 def detectSteps(timestamp, filteredValues):
+    global THRESHOLD_WINDOW, dataBuffer
+
+    # print("Received data {}".format(timestamp))
+
+    def getActiveAxisArr(arr):
+        # find active axis
+        activeAxis = np.argmax(arr.sum(axis=0), axis=0)
+        return np.take(arr, activeAxis, axis=1)
+
+    def calculateThreshold(arr):
+        min = np.min(arr)
+        max = np.max(arr)
+
+        print("min {}, max {}".format(min, max))
+        return ((min+max)/2)
+
+    def countStepsInBuffer(arr, threshold):
+        count = 0
+        # loop through points (i, j)
+        #  - shiftedPoint = point - threshold
+        #  - if i >= 0 && j < 0 : count = count + 1
+
+    dataBuffer.append(filteredValues)
+
+    if len(dataBuffer) == THRESHOLD_WINDOW:
+        npArray = np.array(dataBuffer)
+        activeArr = getActiveAxisArr(npArray)
+        threshold = calculateThreshold(activeArr)
+
+        print threshold
+
+        dataBuffer = []
+
+        countStepsInBuffer(activeArr, threshold)
+
+
+
     """
     Accelerometer-based step detection algorithm.
     
@@ -52,6 +93,8 @@ def detectSteps(timestamp, filteredValues):
     When a step has been detected, call the onStepDetected method, passing 
     in the timestamp.
     """
+
+
     
     # TODO: Step detection algorithm
     return
