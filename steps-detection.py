@@ -46,14 +46,25 @@ def onStepDetected(timestamp):
     send_socket.send(json.dumps({'user_id' : user_id, 'sensor_type' : 'SENSOR_SERVER_MESSAGE', 'message' : 'SENSOR_STEP', 'data': {'timestamp' : timestamp}}) + "\n")
 
 def detectSteps(timestamp, filteredValues):
-    global THRESHOLD_WINDOW, dataBuffer
-
-    # print("Received data {}".format(timestamp))
+    global THRESHOLD_WINDOW, dataBuffer, count
 
     def getActiveAxisArr(arr):
         # find active axis
-        activeAxis = np.argmax(arr.sum(axis=0), axis=0)
-        return np.take(arr, activeAxis, axis=1)
+
+        # print arr
+        # print arr.sum(axis=0)
+
+        numericalArr = np.delete(arr, 1, 1).flatten()
+        numericalArr = np.array(numericalArr)
+        print numericalArr
+
+        # look at accuracy
+        print np.sum(numericalArr, axis=0)
+
+        activeAxis = np.argmax(numericalArr.sum(axis=0), axis=0)
+        # print activeAxis
+        # print np.take(arr, activeAxis, axis=1)
+        # return np.take(arr, activeAxis, axis=1)
 
     def calculateThreshold(arr):
         min = np.min(arr)
@@ -62,24 +73,29 @@ def detectSteps(timestamp, filteredValues):
         print("min {}, max {}".format(min, max))
         return ((min+max)/2)
 
-    def countStepsInBuffer(arr, threshold):
-        count = 0
-        # loop through points (i, j)
-        #  - shiftedPoint = point - threshold
-        #  - if i >= 0 && j < 0 : count = count + 1
+    def countStepsInBuffer(arr, bufferThreshold):
+        bufferCount = 0
 
-    dataBuffer.append(filteredValues)
+        for i in arr:
+            j = i + 1
+            if i < len(arr) and j < len(arr):
+                if i >= bufferThreshold > j:
+                    bufferCount += 1
+        return bufferCount
+
+    dataBuffer.append([filteredValues, timestamp])
 
     if len(dataBuffer) == THRESHOLD_WINDOW:
         npArray = np.array(dataBuffer)
         activeArr = getActiveAxisArr(npArray)
-        threshold = calculateThreshold(activeArr)
-
-        print threshold
-
-        dataBuffer = []
-
-        countStepsInBuffer(activeArr, threshold)
+        # threshold = calculateThreshold(activeArr)
+        #
+        # print threshold
+        #
+        # dataBuffer = []
+        #
+        # count += countStepsInBuffer(activeArr, threshold)
+        # print("Count: {}".format(count))
 
 
 
