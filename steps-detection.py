@@ -29,7 +29,8 @@ count = 0
 # step detection
 dataBuffer = []
 timestampBuffer = []
-THRESHOLD_WINDOW = 50
+WINDOW_SIZE = 50
+THRESHOLD = 18
 
 '''
     This socket is used to send data back through the data collection server.
@@ -47,19 +48,26 @@ def onStepDetected(timestamp):
     send_socket.send(json.dumps({'user_id' : user_id, 'sensor_type' : 'SENSOR_SERVER_MESSAGE', 'message' : 'SENSOR_STEP', 'data': {'timestamp' : timestamp}}) + "\n")
 
 def detectSteps(timestamp, filteredValues):
-    global THRESHOLD_WINDOW, dataBuffer, timestampBuffer, count
+    global WINDOW_SIZE, dataBuffer, timestampBuffer, count
 
     def getActiveAxisArr(arr):
+        # print(arr)
         # find active axis
+        # print("absolute arr {}".format(np.absolute(arr)))
         # look at accuracy
-        activeAxis = np.argmax(arr.sum(axis=0), axis=0)
+        activeAxis = np.argmax(np.absolute(arr).sum(axis=0), axis=0)
         return np.take(arr, activeAxis, axis=1)
 
     def calculateThreshold(arr):
+        global THRESHOLD
         min = np.min(arr)
         max = np.max(arr)
+        diff = max - min
 
-        return ((min+max)/2)
+        if diff < THRESHOLD:
+            return None
+        else:
+          return ((min+max)/2)
 
     def countStepsInBuffer(arr, bufferThreshold):
         global timestampBuffer
@@ -74,19 +82,20 @@ def detectSteps(timestamp, filteredValues):
                     onStepDetected(timestampBuffer[j])
                     bufferCount += 1
 
-        print("steps found in countstep {}".format(bufferCount))
+        # print("steps found in countstep {}".format(bufferCount))
         return bufferCount
 
     dataBuffer.append(filteredValues)
     timestampBuffer.append(timestamp)
 
-    if len(dataBuffer) == THRESHOLD_WINDOW:
+    if len(dataBuffer) == WINDOW_SIZE:
         npArray = np.array(dataBuffer)
         activeArr = getActiveAxisArr(npArray)
         threshold = calculateThreshold(activeArr)
 
-        count += countStepsInBuffer(activeArr, threshold)
-        print("Count: {}".format(count))
+        if threshold is not None:
+            count += countStepsInBuffer(activeArr, threshold)
+            print("Count: {}".format(count))
 
         dataBuffer = []
         timestampBuffer = []
