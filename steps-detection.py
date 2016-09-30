@@ -33,7 +33,7 @@ timestampBuffer = []
 WINDOW_SIZE = 30
 THRESHOLD = 1.5
 lastStepTimestamp = 0
-STEP_THRESHOLD = 150
+STEP_THRESHOLD = 300
 
 '''
     This socket is used to send data back through the data collection server.
@@ -68,7 +68,7 @@ def detectSteps(timestamp, filteredValues):
         max = np.max(arr)
         diff = max - min
 
-        # print("diff {}".format(diff))
+        print("diff {}".format(diff))
 
         if diff < THRESHOLD:
             return None
