@@ -20,6 +20,7 @@ import sys
 import json
 import threading
 import numpy as np
+import pandas as pd
 
 # TODO: Replace the string with your user ID
 user_id = "a9.34.40.69.36.97.99.8b.3a.23"
@@ -29,8 +30,10 @@ count = 0
 # step detection
 dataBuffer = []
 timestampBuffer = []
-WINDOW_SIZE = 50
-THRESHOLD = 18
+WINDOW_SIZE = 30
+THRESHOLD = 1.5
+lastStepTimestamp = 0
+STEP_THRESHOLD = 150
 
 '''
     This socket is used to send data back through the data collection server.
@@ -51,6 +54,7 @@ def detectSteps(timestamp, filteredValues):
     global WINDOW_SIZE, dataBuffer, timestampBuffer, count
 
     def getActiveAxisArr(arr):
+
         # print(arr)
         # find active axis
         # print("absolute arr {}".format(np.absolute(arr)))
@@ -64,13 +68,15 @@ def detectSteps(timestamp, filteredValues):
         max = np.max(arr)
         diff = max - min
 
+        # print("diff {}".format(diff))
+
         if diff < THRESHOLD:
             return None
         else:
           return ((min+max)/2)
 
     def countStepsInBuffer(arr, bufferThreshold):
-        global timestampBuffer
+        global timestampBuffer, lastStepTimestamp, STEP_THRESHOLD
 
         bufferCount = 0
 
@@ -79,10 +85,14 @@ def detectSteps(timestamp, filteredValues):
 
             if i < len(arr) and j < len(arr):
                 if arr[i] >= bufferThreshold > arr[j]:
-                    onStepDetected(timestampBuffer[j])
-                    bufferCount += 1
+                    if lastStepTimestamp == 0 or lastStepTimestamp + STEP_THRESHOLD <= timestampBuffer[j]:
+                        print("timestamp {}".format(timestampBuffer[j]))
+                        onStepDetected(timestampBuffer[j])
+                        lastStepTimestamp = timestampBuffer[j]
+                        bufferCount += 1
+                    else:
+                        print("step found but threshold too small")
 
-        # print("steps found in countstep {}".format(bufferCount))
         return bufferCount
 
     dataBuffer.append(filteredValues)
