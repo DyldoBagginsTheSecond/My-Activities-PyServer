@@ -59,6 +59,12 @@ def _compute_max(window):
     z = np.max(window[:,2], axis=0)
     return [x, y, z]
 
+def _compute_min(window):
+    x = np.min(window[:,0], axis=0)
+    y = np.min(window[:,1], axis=0)
+    z = np.min(window[:,2], axis=0)
+    return [x, y, z]
+
 # def _compute_FFT(window):
 #     s = np.sin(window)
 #     n_freq = 32
@@ -81,12 +87,14 @@ def extract_features(window):
     variance = _compute_variance_features(window)
     peaks = _compute_peaks(window)
     max = _compute_max(window)
+    min = _compute_min(window)
 
     X = []
     X = np.append(X, mean)
     X = np.append(X, variance)
     X = np.append(X, peaks)
     X = np.append(X, max)
+    X = np.append(X, min)
 
 
     return X
