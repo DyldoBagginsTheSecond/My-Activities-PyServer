@@ -15,6 +15,7 @@ it is still publicly accessible).
 """
 
 import numpy as np
+import sys
 
 def _compute_mean_features(window):
     """
@@ -25,28 +26,23 @@ def _compute_mean_features(window):
 def _compute_variance_features(window):
     return np.var(window, axis=0)
 
-def _compute_peaks(window):
-
-    import sys
-    twoStepsBehindZ = sys.maxint
-    twoStepsBehindX = sys.maxint
-    twoStepsBehindY = sys.maxint
+def _compute_mean_crossing(window):
     oneStepBehindZ = sys.maxint
     oneStepBehindX = sys.maxint
     oneStepBehindY = sys.maxint
     peaksX = 0
     peaksY = 0
     peaksZ = 0
+    meanX = np.mean(window[:, 0], axis=0)
+    meanY = np.mean(window[:, 1], axis=0)
+    meanZ = np.mean(window[:, 2], axis=0)
     for x, y, z in window:
-        if twoStepsBehindX < oneStepBehindX and oneStepBehindX < x :
+        if oneStepBehindX > meanX and x < meanX:
             peaksX += 1
-        if twoStepsBehindY < oneStepBehindY and oneStepBehindY < y:
+        if oneStepBehindY > meanY and y < meanY:
             peaksY += 1
-        if twoStepsBehindZ < oneStepBehindZ and oneStepBehindZ < z:
+        if oneStepBehindZ > meanZ and z < meanZ:
             peaksZ += 1
-        twoStepsBehindX = oneStepBehindX
-        twoStepsBehindY = oneStepBehindY
-        twoStepsBehindZ = oneStepBehindZ
         oneStepBehindX = x
         oneStepBehindY = y
         oneStepBehindZ = z
@@ -104,7 +100,7 @@ def extract_features(window):
     X = np.append(X, _compute_variance_features(window))
     X = np.append(X, _compute_magnitude_features(window))
     X = np.append(X, _compute_entropy_features(window))
-    X = np.append(X, _compute_peaks(window))
+    X = np.append(X, _compute_mean_crossing(window))
     X = np.append(X, _compute_max(window))
     X = np.append(X, _compute_min(window))
     return X
