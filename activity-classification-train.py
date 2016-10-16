@@ -80,8 +80,9 @@ n_samples = 1000
 time_elapsed_seconds = (data[n_samples,0] - data[0,0]) / 1000
 sampling_rate = n_samples / time_elapsed_seconds
 
-feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z", "magnitude", "entropy", "peak X", "peak Y", "peak Z",
-                 "max X", "max Y", "max Z", "min X", "min Y", "min Z"]
+feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z", "magnitude", "entropy",
+                 "mean-crossing X", "mean-crossing Y", "mean-crossing Z", "max X", "max Y", "max Z", "min X",
+                 "min Y", "min Z"]
 class_names = ["Stationary", "Walking"]
 
 print("Extracting features and labels for window size {} and step size {}...".format(window_size, step_size))
@@ -122,7 +123,7 @@ sys.stdout.flush()
 plt.figure()
 formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
-    plt.plot(X[i,6], X[i,7], formats[int(y[i])])
+    plt.plot(X[i,8], X[i,9], formats[int(y[i])])
     
 plt.show()
 
