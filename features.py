@@ -25,6 +25,18 @@ def _compute_mean_features(window):
 def _compute_variance_features(window):
     return np.var(window, axis=0)
 
+def _compute_magnitude_features(window):
+    # print("window {}".format(window))
+    sum = np.sum(window, axis=0)
+    # print("sum {}".format(sum))
+    sqr = np.power(sum, 2)
+    # print("sqr {}".format(sqr))
+    axissum = np.sum(sqr, axis=0)
+    # print("axisSum {}".format(axissum))
+    sroot = np.sqrt(axissum)
+    # print("sroot {}".format(sroot))
+    return sroot
+
 def extract_features(window):
     """
     Here is where you will extract your features from the data over 
@@ -37,10 +49,12 @@ def extract_features(window):
     """
     mean = _compute_mean_features(window)
     variance = _compute_variance_features(window)
+    magnitude = _compute_magnitude_features(window)
 
     X = []
     X = np.append(X, mean)
     X = np.append(X, variance)
+    X = np.append(X, magnitude)
 
 
     return X

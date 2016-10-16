@@ -80,7 +80,7 @@ n_samples = 1000
 time_elapsed_seconds = (data[n_samples,0] - data[0,0]) / 1000
 sampling_rate = n_samples / time_elapsed_seconds
 
-feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z"]
+feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z", "magnitude"]
 class_names = ["Stationary", "Walking"]
 
 print("Extracting features and labels for window size {} and step size {}...".format(window_size, step_size))
@@ -97,7 +97,7 @@ for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_s
     # extract features over window:
     x = extract_features(window)
 
-    print("feature size {}".format(len(x)))
+    # print("feature size {}".format(len(x)))
     # append features:
     X = np.append(X, np.reshape(x, (1,-1)), axis=0)
     # append label:
