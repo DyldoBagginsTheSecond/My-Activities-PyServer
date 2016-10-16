@@ -26,16 +26,20 @@ def _compute_variance_features(window):
     return np.var(window, axis=0)
 
 def _compute_magnitude_features(window):
-    # print("window {}".format(window))
     sum = np.sum(window, axis=0)
-    # print("sum {}".format(sum))
     sqr = np.power(sum, 2)
-    # print("sqr {}".format(sqr))
     axissum = np.sum(sqr, axis=0)
-    # print("axisSum {}".format(axissum))
     sroot = np.sqrt(axissum)
-    # print("sroot {}".format(sroot))
     return sroot
+
+def _compute_entropy_features(window):
+    hist = np.histogram(window)[0]
+    entropy = 0
+    for (i, val) in enumerate(hist):
+        if hist[i] > 0:
+            entropy += hist[i] * np.log2([hist[i]])[0]
+
+    return entropy
 
 def extract_features(window):
     """
@@ -47,14 +51,11 @@ def extract_features(window):
     of data points and d is the number of features.
     
     """
-    mean = _compute_mean_features(window)
-    variance = _compute_variance_features(window)
-    magnitude = _compute_magnitude_features(window)
 
     X = []
-    X = np.append(X, mean)
-    X = np.append(X, variance)
-    X = np.append(X, magnitude)
-
+    X = np.append(X, _compute_mean_features(window))
+    X = np.append(X, _compute_variance_features(window))
+    X = np.append(X, _compute_magnitude_features(window))
+    X = np.append(X, _compute_entropy_features(window))
 
     return X
