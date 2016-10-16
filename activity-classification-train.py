@@ -121,7 +121,7 @@ sys.stdout.flush()
 plt.figure()
 formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
-    plt.plot(X[i,0], X[i,1], formats[int(y[i])])
+    plt.plot(X[i,6], X[i,7], formats[int(y[i])])
     
 plt.show()
 
