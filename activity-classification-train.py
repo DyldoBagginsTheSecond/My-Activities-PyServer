@@ -80,7 +80,7 @@ n_samples = 1000
 time_elapsed_seconds = (data[n_samples,0] - data[0,0]) / 1000
 sampling_rate = n_samples / time_elapsed_seconds
 
-feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z", "peak X", "peak Y", "peak Z",
+feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z", "magnitude", "entropy", "peak X", "peak Y", "peak Z",
                  "max X", "max Y", "max Z", "min X", "min Y", "min Z"]
 class_names = ["Stationary", "Walking"]
 
@@ -98,7 +98,7 @@ for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_s
     # extract features over window:
     x = extract_features(window)
 
-    print("feature size {}".format(len(x)))
+    # print("feature size {}".format(len(x)))
     # append features:
     X = np.append(X, np.reshape(x, (1,-1)), axis=0)
     # append label:
@@ -122,7 +122,7 @@ sys.stdout.flush()
 plt.figure()
 formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
-    plt.plot(X[i,12], X[i,13], formats[int(y[i])])
+    plt.plot(X[i,6], X[i,7], formats[int(y[i])])
     
 plt.show()
 

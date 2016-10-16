@@ -73,6 +73,22 @@ def _compute_min(window):
 #     print freq[sp.argmax()]
 #     return freq[sp.argsort()]
 
+def _compute_magnitude_features(window):
+    sum = np.sum(window, axis=0)
+    sqr = np.power(sum, 2)
+    axissum = np.sum(sqr, axis=0)
+    sroot = np.sqrt(axissum)
+    return sroot
+
+def _compute_entropy_features(window):
+    hist = np.histogram(window)[0]
+    entropy = 0
+    for (i, val) in enumerate(hist):
+        if hist[i] > 0:
+            entropy += hist[i] * np.log2([hist[i]])[0]
+
+    return entropy
+
 def extract_features(window):
     """
     Here is where you will extract your features from the data over 
@@ -83,18 +99,12 @@ def extract_features(window):
     of data points and d is the number of features.
     
     """
-    mean = _compute_mean_features(window)
-    variance = _compute_variance_features(window)
-    peaks = _compute_peaks(window)
-    max = _compute_max(window)
-    min = _compute_min(window)
-
     X = []
-    X = np.append(X, mean)
-    X = np.append(X, variance)
-    X = np.append(X, peaks)
-    X = np.append(X, max)
-    X = np.append(X, min)
-
-
+    X = np.append(X, _compute_mean_features(window))
+    X = np.append(X, _compute_variance_features(window))
+    X = np.append(X, _compute_magnitude_features(window))
+    X = np.append(X, _compute_entropy_features(window))
+    X = np.append(X, _compute_peaks(window))
+    X = np.append(X, _compute_max(window))
+    X = np.append(X, _compute_min(window))
     return X
