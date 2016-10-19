@@ -139,10 +139,10 @@ n_classes = len(class_names)
 # Report average accuracy, precision and recall metrics.
 
 cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
-tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3)
-tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=4)
-tree3 = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=4)
-tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=4, max_features=4)
+tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=3)
+tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=6)
+tree3 = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=3)
+tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=6)
 
 def calcAPR(conf):
     acc = 0.0
@@ -180,9 +180,9 @@ def calcAPR(conf):
     # print("Recall: {}".format(rec))
     return [acc, prec, rec]
 
-totalAcc = np.zeros(4)
-totalPrec = np.zeros((4, n_classes))
-totalRec = np.zeros((4, n_classes))
+totalAcc = np.zeros(5)
+totalPrec = np.zeros((5, n_classes))
+totalRec = np.zeros((5, n_classes))
 
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
@@ -232,6 +232,18 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     totalPrec[3] += np.array(apr[1])
     totalRec[3] += np.array(apr[2])
 
+    # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
+    C = 1.0
+    clf = svm.LinearSVC( C=C )
+    clf.fit(X_train, y_train)
+    y_predclf = clf.predict(X_test)
+    confclf = confusion_matrix(y_test, y_pred4)
+    # print confclf
+    apr = calcAPR(confclf)
+    totalAcc[4] += apr[0]
+    totalPrec[4] += np.array(apr[1])
+    totalRec[4] += np.array(apr[2])
+
 print("Tree 1:")
 print("Total average accuracy: {}".format(totalAcc[0]/10))
 print("Total average precision: {}".format(totalPrec[0]/10))
@@ -252,7 +264,11 @@ print("Total average accuracy: {}".format(totalAcc[3]/10))
 print("Total average precision: {}".format(totalPrec[3]/10))
 print("Total average recall: {}\n".format(totalRec[3]/10))
 
-# TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
+print("Linear SVM:")
+print("Total average accuracy: {}".format(totalAcc[4]/10))
+print("Total average precision: {}".format(totalPrec[4]/10))
+print("Total average recall: {}\n".format(totalRec[4]/10))
+
 
 # TODO: Once you have collected data, train your best model on the entire
 # dataset. Then save it to disk as follows:
