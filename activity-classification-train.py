@@ -124,7 +124,7 @@ formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
     plt.plot(X[i,6], X[i,7], formats[int(y[i])])
 
-plt.show()
+#plt.show()
 
 # %%---------------------------------------------------------------------------
 #
@@ -138,51 +138,25 @@ n_classes = len(class_names)
 # TODO: Train and evaluate your decision tree classifier over 10-fold CV.
 # Report average accuracy, precision and recall metrics.
 
-total_acc = 0.0
-total_prec = np.array([0.0,0.0,0.0])
-total_rec = np.array([0.0,0.0,0.0])
-prec = [0.0,0.0,0.0]
-rec = [0.0,0.0,0.0]
-
-cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
+cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
 tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3)
 tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=4)
 tree3 = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=4)
 tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=4, max_features=4)
 
-for i, (train_indexes, test_indexes) in enumerate(cv):
-    X_train = X[train_indexes, :]
-    y_train = y[train_indexes]
-    X_test = X[test_indexes, :]
-    y_test = y[test_indexes]
-
-    tree1.fit(X_train, y_train)
-    y_pred1 = tree1.predict(X_test)
-    export_graphviz(tree1, out_file='tree1.dot', feature_names = feature_names)
-    conf = confusion_matrix(y_test, y_pred1)
-
-    tree2.fit(X_train, y_train)
-    y_pred2 = tree2.predict(X_test)
-    export_graphviz(tree2, out_file='tree2.dot', feature_names = feature_names)
-    conf = confusion_matrix(y_test, y_pred2)
-
-    tree3.fit(X_train, y_train)
-    y_pred3 = tree3.predict(X_test)
-    export_graphviz(tree3, out_file='tree3.dot', feature_names = feature_names)
-    conf = confusion_matrix(y_test, y_pred3)
-
-    tree4.fit(X_train, y_train)
-    y_pred4 = tree4.predict(X_test)
-    export_graphviz(tree4, out_file='tree4.dot', feature_names = feature_names)
-    conf = confusion_matrix(y_test, y_pred4)
-
-    print("Fold {}".format(i))
-
-    acc = (conf[0][0] + conf[1][1] + conf[2][2]) / (3.0*n_samples/10)
-    for j in range(0,3):
+def calcAPR(conf):
+    acc = 0.0
+    prec = np.zeros(n_classes)
+    rec = np.zeros(n_classes)
+    den_prec = 0
+    den_rec = 0
+    for j in range(0, n_classes):
         num = (float)(conf[j][j]) # Precision & recall have the same numerator
-        den_prec = (float)(conf[0][j]+conf[1][j]+conf[2][j]) # Denominator to calculate precision
-        den_rec = (float)(conf[j][0]+conf[j][1]+conf[j][2]) # Denominator to calculate recall
+
+        for k in range(0, n_classes):
+            acc += (float)(conf[k][k])
+            den_prec += (float)(conf[k][j]) # Denominator to calculate precision
+            den_rec += (float)(conf[j][k]) # Denominator to calculate recall
 
         if (den_prec != 0):
             if (num == 0): # TP = 0 and FP != 0: precision is 0
@@ -200,13 +174,67 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
         else: # TP = 0 and FN = 0: recall is 1
             rec[j] = 1.0
 
-    total_acc += acc
-    total_prec += prec
-    total_rec += rec
+    acc /= (n_classes*n/10.0)
+    return [acc, prec, rec]
 
-print("Average accuracy: {}".format(total_acc/10))
-print("Average precision: {}".format(total_prec/10))
-print("Average recall: {}".format(total_rec/10))
+def avgAPR (conf1, conf2, conf3, conf4):
+    apr1 = calcAPR(conf1)
+    apr2 = calcAPR(conf2)
+    apr3 = calcAPR(conf3)
+    apr4 = calcAPR(conf4)
+
+    total_acc = apr1[0] + apr2[0] + apr3[0] + apr4[0]
+    total_prec = np.array(apr1[1]) + np.array(apr2[1]) + np.array(apr3[1]) + np.array(apr4[1])
+    total_rec = np.array(apr1[2]) + np.array(apr2[2]) + np.array(apr3[2]) + np.array(apr4[2])
+
+    print("Average accuracy: {}".format(total_acc/4))
+    print("Average precision: {}".format(total_prec/4))
+    print("Average recall: {}\n".format(total_rec/4))
+    return [total_acc/4, total_prec/4, total_rec/4]
+
+totalAcc = 0.0
+totalPrec = np.zeros(n_classes)
+totalRec = np.zeros(n_classes)
+for i, (train_indexes, test_indexes) in enumerate(cv):
+    X_train = X[train_indexes, :]
+    y_train = y[train_indexes]
+    X_test = X[test_indexes, :]
+    y_test = y[test_indexes]
+
+    print("Fold {} : The confusion matrices are :".format(i))
+
+    tree1.fit(X_train, y_train)
+    y_pred1 = tree1.predict(X_test)
+    export_graphviz(tree1, out_file='tree1.dot', feature_names = feature_names)
+    conf1 = confusion_matrix(y_test, y_pred1)
+    print conf1
+
+    tree2.fit(X_train, y_train)
+    y_pred2 = tree2.predict(X_test)
+    export_graphviz(tree2, out_file='tree2.dot', feature_names = feature_names)
+    conf2 = confusion_matrix(y_test, y_pred2)
+    print conf2
+
+    tree3.fit(X_train, y_train)
+    y_pred3 = tree3.predict(X_test)
+    export_graphviz(tree3, out_file='tree3.dot', feature_names = feature_names)
+    conf3 = confusion_matrix(y_test, y_pred3)
+    print conf3
+
+    tree4.fit(X_train, y_train)
+    y_pred4 = tree4.predict(X_test)
+    export_graphviz(tree4, out_file='tree4.dot', feature_names = feature_names)
+    conf4 = confusion_matrix(y_test, y_pred4)
+    print conf4
+
+    apr = avgAPR(conf1, conf2, conf3, conf4)
+    totalAcc += apr[0]
+    totalPrec += np.array(apr[1])
+    totalRec += np.array(apr[2])
+
+print("Total average accuracy: {}".format(totalAcc/10))
+print("Total average precision: {}".format(totalPrec/10))
+print("Total average recall: {}".format(totalRec/10))
 
 # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
 
