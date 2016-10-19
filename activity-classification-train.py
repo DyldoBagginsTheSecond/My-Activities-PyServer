@@ -6,21 +6,21 @@ Created on Wed Sep 21 16:02:58 2016
 
 Assignment 2 : Activity Recognition
 
-This is the starter script used to train an activity recognition 
+This is the starter script used to train an activity recognition
 classifier on accelerometer data.
 
-See the assignment details for instructions. Basically you will train 
-a decision tree classifier and vary its parameters and evalute its 
-performance by computing the average accuracy, precision and recall 
-metrics over 10-fold cross-validation. You will then train another 
+See the assignment details for instructions. Basically you will train
+a decision tree classifier and vary its parameters and evalute its
+performance by computing the average accuracy, precision and recall
+metrics over 10-fold cross-validation. You will then train another
 classifier for comparison.
 
-Once you get to part 4 of the assignment, where you will collect your 
-own data, change the filename to reference the file containing the 
-data you collected. Then retrain the classifier and choose the best 
+Once you get to part 4 of the assignment, where you will collect your
+own data, change the filename to reference the file containing the
+data you collected. Then retrain the classifier and choose the best
 classifier to save to disk. This will be used in your final system.
 
-Make sure to chek the assignment details, since the instructions here are 
+Make sure to chek the assignment details, since the instructions here are
 not complete.
 
 """
@@ -94,7 +94,7 @@ y = np.zeros(0,)
 
 for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_size):
     # omit timestamp and label from accelerometer window for feature extraction:
-    window = window_with_timestamp_and_label[:,1:-1]  
+    window = window_with_timestamp_and_label[:,1:-1]
     # extract features over window:
     x = extract_features(window)
 
@@ -103,7 +103,7 @@ for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_s
     X = np.append(X, np.reshape(x, (1,-1)), axis=0)
     # append label:
     y = np.append(y, window_with_timestamp_and_label[10, -1])
-    
+
 print("Finished feature extraction over {} windows".format(len(X)))
 print("Unique labels found: {}".format(set(y)))
 sys.stdout.flush()
@@ -123,7 +123,7 @@ plt.figure()
 formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
     plt.plot(X[i,6], X[i,7], formats[int(y[i])])
-    
+
 plt.show()
 
 # %%---------------------------------------------------------------------------
@@ -139,16 +139,44 @@ n_classes = len(class_names)
 # Report average accuracy, precision and recall metrics.
 
 cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
-
+tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=4)
+tree3 = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=4)
+tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=4, max_features=4)
 for i, (train_indexes, test_indexes) in enumerate(cv):
+    X_train = X[train_indexes, :]
+    y_train = y[train_indexes]
+    X_test = X[test_indexes, :]
+    y_test = y[test_indexes]
+
+    tree1.fit(X_train, y_train)
+    y_pred1 = tree1.predict(X_test)
+    export_graphviz(tree1, out_file='tree1.dot', feature_names = feature_names)
+    conf = confusion_matrix(y_test, y_pred1)
+
+    tree2.fit(X_train, y_train)
+    y_pred2 = tree2.predict(X_test)
+    export_graphviz(tree2, out_file='tree2.dot', feature_names = feature_names)
+    conf = confusion_matrix(y_test, y_pred2)
+
+    tree3.fit(X_train, y_train)
+    y_pred3 = tree3.predict(X_test)
+    export_graphviz(tree3, out_file='tree3.dot', feature_names = feature_names)
+    conf = confusion_matrix(y_test, y_pred3)
+
+    tree4.fit(X_train, y_train)
+    y_pred4 = tree4.predict(X_test)
+    export_graphviz(tree4, out_file='tree4.dot', feature_names = feature_names)
+    conf = confusion_matrix(y_test, y_pred4)
+
     print("Fold {}".format(i))
-    
+
 # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
-    
-# TODO: Once you have collected data, train your best model on the entire 
+
+# TODO: Once you have collected data, train your best model on the entire
 # dataset. Then save it to disk as follows:
 
 # when ready, set this to the best model you found, trained on all the data:
-best_classifier = None 
+best_classifier = None
 with open('classifier.pickle', 'wb') as f: # 'wb' stands for 'write bytes'
     pickle.dump(best_classifier, f)
