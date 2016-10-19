@@ -124,7 +124,7 @@ formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
     plt.plot(X[i,6], X[i,7], formats[int(y[i])])
 
-#plt.show()
+plt.show()
 
 # %%---------------------------------------------------------------------------
 #
@@ -146,8 +146,8 @@ tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=4, max_features=4)
 
 def calcAPR(conf):
     acc = 0.0
-    prec = np.zeros(n_classes)
-    rec = np.zeros(n_classes)
+    prec = np.array(np.zeros(n_classes))
+    rec = np.array(np.zeros(n_classes))
     den_prec = 0
     den_rec = 0
     for j in range(0, n_classes):
@@ -175,66 +175,82 @@ def calcAPR(conf):
             rec[j] = 1.0
 
     acc /= (n_classes*n/10.0)
+    # print("Accuracy: {}".format(acc))
+    # print("Precision: {}".format(prec))
+    # print("Recall: {}".format(rec))
     return [acc, prec, rec]
 
-def avgAPR (conf1, conf2, conf3, conf4):
-    apr1 = calcAPR(conf1)
-    apr2 = calcAPR(conf2)
-    apr3 = calcAPR(conf3)
-    apr4 = calcAPR(conf4)
+totalAcc = np.zeros(4)
+totalPrec = np.zeros((4, n_classes))
+totalRec = np.zeros((4, n_classes))
 
-    total_acc = apr1[0] + apr2[0] + apr3[0] + apr4[0]
-    total_prec = np.array(apr1[1]) + np.array(apr2[1]) + np.array(apr3[1]) + np.array(apr4[1])
-    total_rec = np.array(apr1[2]) + np.array(apr2[2]) + np.array(apr3[2]) + np.array(apr4[2])
-
-    print("Average accuracy: {}".format(total_acc/4))
-    print("Average precision: {}".format(total_prec/4))
-    print("Average recall: {}\n".format(total_rec/4))
-    return [total_acc/4, total_prec/4, total_rec/4]
-
-totalAcc = 0.0
-totalPrec = np.zeros(n_classes)
-totalRec = np.zeros(n_classes)
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
     y_train = y[train_indexes]
     X_test = X[test_indexes, :]
     y_test = y[test_indexes]
 
-    print("Fold {} : The confusion matrices are :".format(i))
+    print("Fold {}".format(i))
 
     tree1.fit(X_train, y_train)
     y_pred1 = tree1.predict(X_test)
     export_graphviz(tree1, out_file='tree1.dot', feature_names = feature_names)
     conf1 = confusion_matrix(y_test, y_pred1)
-    print conf1
+    # print conf1
+    apr = calcAPR(conf1)
+    totalAcc[0] += apr[0]
+    totalPrec[0] += np.array(apr[1])
+    totalRec[0] += np.array(apr[2])
 
     tree2.fit(X_train, y_train)
     y_pred2 = tree2.predict(X_test)
     export_graphviz(tree2, out_file='tree2.dot', feature_names = feature_names)
     conf2 = confusion_matrix(y_test, y_pred2)
-    print conf2
+    # print conf2
+    apr = calcAPR(conf2)
+    totalAcc[1] += apr[0]
+    totalPrec[1] += np.array(apr[1])
+    totalRec[1] += np.array(apr[2])
 
     tree3.fit(X_train, y_train)
     y_pred3 = tree3.predict(X_test)
     export_graphviz(tree3, out_file='tree3.dot', feature_names = feature_names)
     conf3 = confusion_matrix(y_test, y_pred3)
-    print conf3
+    # print conf3
+    apr = calcAPR(conf3)
+    totalAcc[2] += apr[0]
+    totalPrec[2] += np.array(apr[1])
+    totalRec[2] += np.array(apr[2])
 
     tree4.fit(X_train, y_train)
     y_pred4 = tree4.predict(X_test)
     export_graphviz(tree4, out_file='tree4.dot', feature_names = feature_names)
     conf4 = confusion_matrix(y_test, y_pred4)
-    print conf4
+    # print conf4
+    apr = calcAPR(conf4)
+    totalAcc[3] += apr[0]
+    totalPrec[3] += np.array(apr[1])
+    totalRec[3] += np.array(apr[2])
 
-    apr = avgAPR(conf1, conf2, conf3, conf4)
-    totalAcc += apr[0]
-    totalPrec += np.array(apr[1])
-    totalRec += np.array(apr[2])
+print("Tree 1:")
+print("Total average accuracy: {}".format(totalAcc[0]/10))
+print("Total average precision: {}".format(totalPrec[0]/10))
+print("Total average recall: {}\n".format(totalRec[0]/10))
 
-print("Total average accuracy: {}".format(totalAcc/10))
-print("Total average precision: {}".format(totalPrec/10))
-print("Total average recall: {}".format(totalRec/10))
+print("Tree 2:")
+print("Total average accuracy: {}".format(totalAcc[1]/10))
+print("Total average precision: {}".format(totalPrec[1]/10))
+print("Total average recall: {}\n".format(totalRec[1]/10))
+
+print("Tree 3:")
+print("Total average accuracy: {}".format(totalAcc[2]/10))
+print("Total average precision: {}".format(totalPrec[2]/10))
+print("Total average recall: {}\n".format(totalRec[2]/10))
+
+print("Tree 4:")
+print("Total average accuracy: {}".format(totalAcc[3]/10))
+print("Total average precision: {}".format(totalPrec[3]/10))
+print("Total average recall: {}\n".format(totalRec[3]/10))
 
 # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
 
