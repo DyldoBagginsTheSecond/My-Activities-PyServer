@@ -138,11 +138,18 @@ n_classes = len(class_names)
 # TODO: Train and evaluate your decision tree classifier over 10-fold CV.
 # Report average accuracy, precision and recall metrics.
 
+total_acc = 0.0
+total_prec = np.array([0.0,0.0,0.0])
+total_rec = np.array([0.0,0.0,0.0])
+prec = [0.0,0.0,0.0]
+rec = [0.0,0.0,0.0]
+
 cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
 tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3)
 tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=4)
 tree3 = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=4)
 tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=4, max_features=4)
+
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
     y_train = y[train_indexes]
@@ -170,6 +177,36 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     conf = confusion_matrix(y_test, y_pred4)
 
     print("Fold {}".format(i))
+
+    acc = (conf[0][0] + conf[1][1] + conf[2][2]) / (3.0*n_samples/10)
+    for j in range(0,3):
+        num = (float)(conf[j][j]) # Precision & recall have the same numerator
+        den_prec = (float)(conf[0][j]+conf[1][j]+conf[2][j]) # Denominator to calculate precision
+        den_rec = (float)(conf[j][0]+conf[j][1]+conf[j][2]) # Denominator to calculate recall
+
+        if (den_prec != 0):
+            if (num == 0): # TP = 0 and FP != 0: precision is 0
+                prec[j] = 0.0
+            else:
+                prec[j] = num/den_prec
+        else: # TP = 0 and FP = 0: precision is 1
+            prec[j] = 1.0
+
+        if (den_rec != 0):
+            if (num == 0): # TP = 0 and FN != 0: recall is 0
+                rec[j] = 0.0
+            else:
+                rec[j] = num/den_rec
+        else: # TP = 0 and FN = 0: recall is 1
+            rec[j] = 1.0
+
+    total_acc += acc
+    total_prec += prec
+    total_rec += rec
+
+print("Average accuracy: {}".format(total_acc/10))
+print("Average precision: {}".format(total_prec/10))
+print("Average recall: {}".format(total_rec/10))
 
 # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
 
