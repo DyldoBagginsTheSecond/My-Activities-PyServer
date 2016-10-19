@@ -237,7 +237,7 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     clf = svm.LinearSVC( C=C )
     clf.fit(X_train, y_train)
     y_predclf = clf.predict(X_test)
-    confclf = confusion_matrix(y_test, y_pred4)
+    confclf = confusion_matrix(y_test, y_predclf)
     # print confclf
     apr = calcAPR(confclf)
     totalAcc[4] += apr[0]
