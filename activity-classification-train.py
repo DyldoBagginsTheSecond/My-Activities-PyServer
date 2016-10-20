@@ -46,7 +46,7 @@ import pickle
 
 print("Loading data...")
 sys.stdout.flush()
-data_file = os.path.join('data', 'activity-data.csv')
+data_file = os.path.join('data', 'my-activity-data.csv')
 data = np.genfromtxt(data_file, delimiter=',')
 print("Loaded {} raw labelled activity data samples.".format(len(data)))
 sys.stdout.flush()
@@ -82,7 +82,7 @@ sampling_rate = n_samples / time_elapsed_seconds
 
 feature_names = ["mean X", "mean Y", "mean Z", "variance X", "variance Y", "variance Z", "magnitude", "entropy", "peak X", "peak Y", "peak Z",
                  "max X", "max Y", "max Z", "min X", "min Y", "min Z"]
-class_names = ["Stationary", "Walking"]
+class_names = ["Stationary", "Walking", "Jogging", "Jumping"]
 
 print("Extracting features and labels for window size {} and step size {}...".format(window_size, step_size))
 sys.stdout.flush()
@@ -120,11 +120,15 @@ sys.stdout.flush()
 print("Plotting data points...")
 sys.stdout.flush()
 plt.figure()
-formats = ['bo', 'go']
+formats = ['bo', 'go', 'ro', 'yo']
+
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
-    plt.plot(X[i,6], X[i,7], formats[int(y[i])])
+    plt.plot(X[i,4], X[i,5], formats[int(y[i])])
 
 plt.show()
+
+
+
 
 # %%---------------------------------------------------------------------------
 #
@@ -139,10 +143,10 @@ n_classes = len(class_names)
 # Report average accuracy, precision and recall metrics.
 
 cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
-tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=3)
-tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=6)
+# tree1 = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+# tree2 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=6)
 tree3 = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=3)
-tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=6)
+# tree4 = DecisionTreeClassifier(criterion="entropy", max_depth=3, max_features=6)
 
 def calcAPR(conf):
     acc = 0.0
@@ -175,14 +179,107 @@ def calcAPR(conf):
             rec[j] = 1.0
 
     acc /= (n_classes*n/10.0)
-    # print("Accuracy: {}".format(acc))
-    # print("Precision: {}".format(prec))
-    # print("Recall: {}".format(rec))
     return [acc, prec, rec]
 
-totalAcc = np.zeros(5)
-totalPrec = np.zeros((5, n_classes))
-totalRec = np.zeros((5, n_classes))
+# -------------------------------------- #
+#        Part 3                          #
+# -------------------------------------- #
+
+# totalAcc = np.zeros(5)
+# totalPrec = np.zeros((5, n_classes))
+# totalRec = np.zeros((5, n_classes))
+#
+# for i, (train_indexes, test_indexes) in enumerate(cv):
+#     X_train = X[train_indexes, :]
+#     y_train = y[train_indexes]
+#     X_test = X[test_indexes, :]
+#     y_test = y[test_indexes]
+#
+#     print("Fold {}".format(i))
+#
+#     tree1.fit(X_train, y_train)
+#     y_pred1 = tree1.predict(X_test)
+#     export_graphviz(tree1, out_file='tree1.dot', feature_names = feature_names)
+#     conf1 = confusion_matrix(y_test, y_pred1)
+#     # print conf1
+#     apr = calcAPR(conf1)
+#     totalAcc[0] += apr[0]
+#     totalPrec[0] += np.array(apr[1])
+#     totalRec[0] += np.array(apr[2])
+#
+#     tree2.fit(X_train, y_train)
+#     y_pred2 = tree2.predict(X_test)
+#     export_graphviz(tree2, out_file='tree2.dot', feature_names = feature_names)
+#     conf2 = confusion_matrix(y_test, y_pred2)
+#     # print conf2
+#     apr = calcAPR(conf2)
+#     totalAcc[1] += apr[0]
+#     totalPrec[1] += np.array(apr[1])
+#     totalRec[1] += np.array(apr[2])
+#
+#     tree3.fit(X_train, y_train)
+#     y_pred3 = tree3.predict(X_test)
+#     export_graphviz(tree3, out_file='tree3.dot', feature_names = feature_names)
+#     conf3 = confusion_matrix(y_test, y_pred3)
+#     # print conf3
+#     apr = calcAPR(conf3)
+#     totalAcc[2] += apr[0]
+#     totalPrec[2] += np.array(apr[1])
+#     totalRec[2] += np.array(apr[2])
+#
+#     tree4.fit(X_train, y_train)
+#     y_pred4 = tree4.predict(X_test)
+#     export_graphviz(tree4, out_file='tree4.dot', feature_names = feature_names)
+#     conf4 = confusion_matrix(y_test, y_pred4)
+#     # print conf4
+#     apr = calcAPR(conf4)
+#     totalAcc[3] += apr[0]
+#     totalPrec[3] += np.array(apr[1])
+#     totalRec[3] += np.array(apr[2])
+#
+# # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
+#     C = 1.0
+#     clf = svm.LinearSVC( C=C )
+#     clf.fit(X_train, y_train)
+#     y_predclf = clf.predict(X_test)
+#     confclf = confusion_matrix(y_test, y_predclf)
+#     # print confclf
+#     apr = calcAPR(confclf)
+#     totalAcc[4] += apr[0]
+#     totalPrec[4] += np.array(apr[1])
+#     totalRec[4] += np.array(apr[2])
+#
+# print("Tree 1:")
+# print("Average accuracy: {}".format(totalAcc[0]/10))
+# print("Average precision: {}".format(totalPrec[0]/10))
+# print("Average recall: {}\n".format(totalRec[0]/10))
+#
+# print("Tree 2:")
+# print("Average accuracy: {}".format(totalAcc[1]/10))
+# print("Average precision: {}".format(totalPrec[1]/10))
+# print("Average recall: {}\n".format(totalRec[1]/10))
+#
+# print("Tree 3:")
+# print("Average accuracy: {}".format(totalAcc[2]/10))
+# print("Average precision: {}".format(totalPrec[2]/10))
+# print("Average recall: {}\n".format(totalRec[2]/10))
+#
+# print("Tree 4:")
+# print("Average accuracy: {}".format(totalAcc[3]/10))
+# print("Average precision: {}".format(totalPrec[3]/10))
+# print("Average recall: {}\n".format(totalRec[3]/10))
+#
+# print("Linear SVM:")
+# print("Average accuracy: {}".format(totalAcc[4]/10))
+# print("Average precision: {}".format(totalPrec[4]/10))
+# print("Average recall: {}\n".format(totalRec[4]/10))
+
+# TODO: Once you have collected data, train your best model on the entire
+# dataset. Then save it to disk as follows:
+
+totalAcc = 0.0
+totalPrec = np.zeros(n_classes)
+totalRec = np.zeros(n_classes)
 
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
@@ -190,90 +287,21 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     X_test = X[test_indexes, :]
     y_test = y[test_indexes]
 
-    print("Fold {}".format(i))
-
-    tree1.fit(X_train, y_train)
-    y_pred1 = tree1.predict(X_test)
-    export_graphviz(tree1, out_file='tree1.dot', feature_names = feature_names)
-    conf1 = confusion_matrix(y_test, y_pred1)
-    # print conf1
-    apr = calcAPR(conf1)
-    totalAcc[0] += apr[0]
-    totalPrec[0] += np.array(apr[1])
-    totalRec[0] += np.array(apr[2])
-
-    tree2.fit(X_train, y_train)
-    y_pred2 = tree2.predict(X_test)
-    export_graphviz(tree2, out_file='tree2.dot', feature_names = feature_names)
-    conf2 = confusion_matrix(y_test, y_pred2)
-    # print conf2
-    apr = calcAPR(conf2)
-    totalAcc[1] += apr[0]
-    totalPrec[1] += np.array(apr[1])
-    totalRec[1] += np.array(apr[2])
-
     tree3.fit(X_train, y_train)
     y_pred3 = tree3.predict(X_test)
     export_graphviz(tree3, out_file='tree3.dot', feature_names = feature_names)
     conf3 = confusion_matrix(y_test, y_pred3)
     # print conf3
     apr = calcAPR(conf3)
-    totalAcc[2] += apr[0]
-    totalPrec[2] += np.array(apr[1])
-    totalRec[2] += np.array(apr[2])
+    totalAcc += apr[0]
+    totalPrec += np.array(apr[1])
+    totalRec += np.array(apr[2])
 
-    tree4.fit(X_train, y_train)
-    y_pred4 = tree4.predict(X_test)
-    export_graphviz(tree4, out_file='tree4.dot', feature_names = feature_names)
-    conf4 = confusion_matrix(y_test, y_pred4)
-    # print conf4
-    apr = calcAPR(conf4)
-    totalAcc[3] += apr[0]
-    totalPrec[3] += np.array(apr[1])
-    totalRec[3] += np.array(apr[2])
-
-    # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
-    C = 1.0
-    clf = svm.LinearSVC( C=C )
-    clf.fit(X_train, y_train)
-    y_predclf = clf.predict(X_test)
-    confclf = confusion_matrix(y_test, y_predclf)
-    # print confclf
-    apr = calcAPR(confclf)
-    totalAcc[4] += apr[0]
-    totalPrec[4] += np.array(apr[1])
-    totalRec[4] += np.array(apr[2])
-
-print("Tree 1:")
-print("Total average accuracy: {}".format(totalAcc[0]/10))
-print("Total average precision: {}".format(totalPrec[0]/10))
-print("Total average recall: {}\n".format(totalRec[0]/10))
-
-print("Tree 2:")
-print("Total average accuracy: {}".format(totalAcc[1]/10))
-print("Total average precision: {}".format(totalPrec[1]/10))
-print("Total average recall: {}\n".format(totalRec[1]/10))
-
-print("Tree 3:")
-print("Total average accuracy: {}".format(totalAcc[2]/10))
-print("Total average precision: {}".format(totalPrec[2]/10))
-print("Total average recall: {}\n".format(totalRec[2]/10))
-
-print("Tree 4:")
-print("Total average accuracy: {}".format(totalAcc[3]/10))
-print("Total average precision: {}".format(totalPrec[3]/10))
-print("Total average recall: {}\n".format(totalRec[3]/10))
-
-print("Linear SVM:")
-print("Total average accuracy: {}".format(totalAcc[4]/10))
-print("Total average precision: {}".format(totalPrec[4]/10))
-print("Total average recall: {}\n".format(totalRec[4]/10))
-
-
-# TODO: Once you have collected data, train your best model on the entire
-# dataset. Then save it to disk as follows:
+print("Average accuracy: {}".format(totalAcc/10))
+print("Average precision: {}".format(totalPrec/10))
+print("Average recall: {}\n".format(totalRec/10))
 
 # when ready, set this to the best model you found, trained on all the data:
-best_classifier = None
+best_classifier = tree3;
 with open('classifier.pickle', 'wb') as f: # 'wb' stands for 'write bytes'
     pickle.dump(best_classifier, f)
