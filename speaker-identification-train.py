@@ -72,39 +72,7 @@ print("Found data for {} speakers : {}".format(len(class_names), ", ".join(class
 #		                Extract Features & Labels
 #
 # -----------------------------------------------------------------------------
-def calcAPR(conf):
-    acc = 0.0
-    prec = np.array(np.zeros(n_classes))
-    rec = np.array(np.zeros(n_classes))
-    den_prec = 0
-    den_rec = 0
-    for j in range(0, n_classes):
-        num = (float)(conf[j][j]) # Precision & recall have the same numerator
 
-        for k in range(0, n_classes):
-            acc += (float)(conf[k][k])
-            den_prec += (float)(conf[k][j]) # Denominator to calculate precision
-            den_rec += (float)(conf[j][k]) # Denominator to calculate recall
-
-        if (den_prec != 0):
-            if (num == 0): # TP = 0 and FP != 0: precision is 0
-                prec[j] = 0.0
-            else:
-                prec[j] = num/den_prec
-        else: # TP = 0 and FP = 0: precision is 1
-            prec[j] = 1.0
-
-        if (den_rec != 0):
-            if (num == 0): # TP = 0 and FN != 0: recall is 0
-                rec[j] = 0.0
-            else:
-                rec[j] = num/den_rec
-        else: # TP = 0 and FN = 0: recall is 1
-            rec[j] = 1.0
-
-    acc /= (n_classes*n/10.0)
-    return [acc, prec, rec]
-    
 # You may need to change n_features depending on how you compute your features
 # we have it set to 3 to match the dummy values we return in the starter code.
 n_features = 18
@@ -141,13 +109,45 @@ sys.stdout.flush()
 #
 # -----------------------------------------------------------------------------
 
+def calcAPR(conf):
+    acc = 0.0
+    prec = np.array(np.zeros(n_classes))
+    rec = np.array(np.zeros(n_classes))
+    den_prec = 0
+    den_rec = 0
+    for j in range(0, n_classes):
+        num = (float)(conf[j][j]) # Precision & recall have the same numerator
 
+        for k in range(0, n_classes):
+            acc += (float)(conf[k][k])
+            den_prec += (float)(conf[k][j]) # Denominator to calculate precision
+            den_rec += (float)(conf[j][k]) # Denominator to calculate recall
+
+        if (den_prec != 0):
+            if (num == 0): # TP = 0 and FP != 0: precision is 0
+                prec[j] = 0.0
+            else:
+                prec[j] = num/den_prec
+        else: # TP = 0 and FP = 0: precision is 1
+            prec[j] = 1.0
+
+        if (den_rec != 0):
+            if (num == 0): # TP = 0 and FN != 0: recall is 0
+                rec[j] = 0.0
+            else:
+                rec[j] = num/den_rec
+        else: # TP = 0 and FN = 0: recall is 1
+            rec[j] = 1.0
+
+    acc /= (n_classes*n/10.0)
+    return [acc, prec, rec]
+    
 n = len(y)
 n_classes = len(class_names)
 totalAcc = 0.0
 totalPrec = np.zeros(n_classes)
 totalRec = np.zeros(n_classes)
-tree = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=3)
+tree = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=18)
 cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
