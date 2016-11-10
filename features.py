@@ -124,16 +124,8 @@ class FeatureExtractor():
         This will give you a feature vector of length len(bins).
         """
 
-        # buffer_file = os.path.join('data', 'speaker-data-youtube-1.csv')
-        # buff = buffer(np.genfromtxt(buffer_file, delimiter=','))
-
-        buff = buffer(window)
-
-        formats = self._compute_formants(buff)
+        formats = self._compute_formants(buffer(window))
         hist = np.histogram(formats[0], bins=10, range=(0, 5500))
-        plt.hist(hist)
-        plt.title("Formant")
-        plt.show()
 
         return hist # returns dummy value; replace this with the features you extract
 
@@ -188,9 +180,6 @@ class FeatureExtractor():
 
         pitch = self._compute_pitch_contour(window)
         hist = np.histogram(pitch[0], bins=10, range=(0, 128))
-        plt.hist(hist)
-        plt.title("Pitch")
-        plt.show()
 
         return hist, np.average(pitch[0]), np.std(pitch[0]) # returns dummy value; replace this with the features you extract
 
