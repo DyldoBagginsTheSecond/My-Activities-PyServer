@@ -125,7 +125,7 @@ class FeatureExtractor():
         """
 
         formats = self._compute_formants(buffer(window))
-        hist = np.histogram(formats[0], bins=10, range=(0, 5500))
+        hist = np.histogram(formats[0], bins=30, range=(0, 5500))
 
         return hist # returns dummy value; replace this with the features you extract
 

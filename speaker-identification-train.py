@@ -157,9 +157,9 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
 
     tree.fit(X_train, y_train)
     y_pred = tree.predict(X_test)
-    conf3 = confusion_matrix(y_test, y_pred)
+    conf = confusion_matrix(y_test, y_pred)
     # print conf3
-    apr = calcAPR(conf3)
+    apr = calcAPR(conf)
     totalAcc += apr[0]
     totalPrec += np.array(apr[1])
     totalRec += np.array(apr[2])
