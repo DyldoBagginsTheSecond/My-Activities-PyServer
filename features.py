@@ -124,11 +124,13 @@ class FeatureExtractor():
         This will give you a feature vector of length len(bins).
         """
 
-        buffer_file = os.path.join('data', 'speaker-data-youtube-1.csv')
-        buff = buffer(np.genfromtxt(buffer_file, delimiter=','))
+        # buffer_file = os.path.join('data', 'speaker-data-youtube-1.csv')
+        # buff = buffer(np.genfromtxt(buffer_file, delimiter=','))
+
+        buff = buffer(window)
 
         formats = self._compute_formants(buff)
-        hist = np.histogram(formats[0], bins=105, range=(0, 5500))
+        hist = np.histogram(formats[0], bins=10, range=(0, 5500))
         plt.hist(hist)
         plt.title("Formant")
         plt.show()
