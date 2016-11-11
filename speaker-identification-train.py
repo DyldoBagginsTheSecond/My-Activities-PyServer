@@ -75,7 +75,7 @@ print("Found data for {} speakers : {}".format(len(class_names), ", ".join(class
 
 # You may need to change n_features depending on how you compute your features
 # we have it set to 3 to match the dummy values we return in the starter code.
-n_features = 18
+n_features = 55
 
 print("Extracting features and labels for {} audio windows...".format(data.shape[0]))
 sys.stdout.flush()
@@ -141,14 +141,19 @@ def calcAPR(conf):
 
     acc /= (n_classes*n/10.0)
     return [acc, prec, rec]
-    
+
 n = len(y)
 n_classes = len(class_names)
 totalAcc = 0.0
 totalPrec = np.zeros(n_classes)
 totalRec = np.zeros(n_classes)
-tree = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=18)
+tree = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=n_features)
 cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
+
+labels = []
+for i in enumerate(class_names):
+    labels.append(i)
+
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
     y_train = y[train_indexes]
@@ -157,12 +162,15 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
 
     tree.fit(X_train, y_train)
     y_pred = tree.predict(X_test)
-    conf = confusion_matrix(y_test, y_pred)
+
+    # y_test and y_pred are a bit fishy..all 0.0's and 1.0's
+    conf = confusion_matrix(y_test, y_pred) # TODO: I think this is wrong...
     # print conf3
     apr = calcAPR(conf)
     totalAcc += apr[0]
     totalPrec += np.array(apr[1])
     totalRec += np.array(apr[2])
+
 # TODO: set your best classifier below, then uncomment the following line to train it on ALL the data:
 best_classifier = None
 # best_classifier.fit(X,y)
