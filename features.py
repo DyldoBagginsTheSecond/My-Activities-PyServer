@@ -18,7 +18,7 @@ And for extra credit, you will also need:
 
 
 """
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import os
 import numpy as np
 import math
@@ -127,7 +127,9 @@ class FeatureExtractor():
         formats = self._compute_formants(buffer(window))
         hist = np.histogram(formats[0], bins=30, range=(0, 5500))
 
-        return hist # returns dummy value; replace this with the features you extract
+        # print("HIST {}".format(hist))
+
+        return hist[0] # returns dummy value; replace this with the features you extract
 
     def _compute_pitch_contour(self, window):
         """
@@ -180,8 +182,19 @@ class FeatureExtractor():
 
         pitch = self._compute_pitch_contour(window)
         hist = np.histogram(pitch[0], bins=10, range=(0, 128))
+        # print("PITCH")
+        #
+        # print("hist {}".format(hist))
+        # print("av {}".format(np.average(pitch[0])))
+        # print("std {}".format(np.std(pitch[0])))
 
-        return hist, np.average(pitch[0]), np.std(pitch[0]) # returns dummy value; replace this with the features you extract
+        pitch_features = []
+        pitch_features = np.append(pitch_features, hist[0])
+        pitch_features = np.append(pitch_features, np.average(pitch[0]))
+        pitch_features = np.append(pitch_features, np.std(pitch[0]))
+
+        return pitch_features
+        # return hist[0], np.average(pitch[0]), np.std(pitch[0]) # returns dummy value; replace this with the features you extract
 
     def _compute_mfcc(self, window):
         """
@@ -318,5 +331,7 @@ class FeatureExtractor():
         x = np.append(x, self._compute_formant_features(window))
         x = np.append(x, self._compute_pitch_features(window))
         x = np.append(x, self._compute_delta_coefficients(window))
+
+        # print("FEATURES: {}".format(x))
 
         return x
