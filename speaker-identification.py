@@ -64,13 +64,17 @@ def predict(window):
     """
     
     # TODO: Extract features and predict class label
+    listOfSpeakers = ["aditya","james","noSpeaker","peter"]    
+    extracted = feature_extractor.extract_features(window);
+    reshaped = np.reshape(extracted,(1,-1))
+    prediction = classifier.predict(reshaped)
     
     # You may need to reshape your feature vector into a 1 X d matrix as follows:
     # X = np.reshape(X,(1,-1))
     
     # When you get a label, send it to the UI by calling onSpeakerDetected:
     # onSpeakerDetected(speaker)
-    
+    onSpeakerDetected(listOfSpeakers[prediction[0]])
     return
     
     
