@@ -110,45 +110,20 @@ sys.stdout.flush()
 # -----------------------------------------------------------------------------
 
 def calcAPR(conf):
-    acc = 0.0
-    prec = np.array(np.zeros(n_classes))
-    rec = np.array(np.zeros(n_classes))
-    den_prec = 0
-    den_rec = 0
-    for j in range(0, n_classes):
-        num = (float)(conf[j][j]) # Precision & recall have the same numerator
-
-        for k in range(0, n_classes):
-            acc += (float)(conf[k][k])
-            den_prec += (float)(conf[k][j]) # Denominator to calculate precision
-            den_rec += (float)(conf[j][k]) # Denominator to calculate recall
-
-        if (den_prec != 0):
-            if (num == 0): # TP = 0 and FP != 0: precision is 0
-                prec[j] = 0.0
-            else:
-                prec[j] = num/den_prec
-        else: # TP = 0 and FP = 0: precision is 1
-            prec[j] = 1.0
-
-        if (den_rec != 0):
-            if (num == 0): # TP = 0 and FN != 0: recall is 0
-                rec[j] = 0.0
-            else:
-                rec[j] = num/den_rec
-        else: # TP = 0 and FN = 0: recall is 1
-            rec[j] = 1.0
-
-    acc /= (n_classes*n/10.0)
+    acc = np.sum(np.diagonal(conf), dtype=float)/np.sum(conf, dtype=float)
+    prec = np.diagonal(conf)/np.sum(conf, axis=0, dtype=float)
+    rec = np.diagonal(conf)/np.sum(conf, axis=1, dtype=float)
     return [acc, prec, rec]
 
 n = len(y)
 n_classes = len(class_names)
+folds = 10
+f_folds = (float)(folds)
 totalAcc = 0.0
 totalPrec = np.zeros(n_classes)
 totalRec = np.zeros(n_classes)
 tree = DecisionTreeClassifier(criterion="entropy", max_depth=6, max_features=n_features)
-cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
+cv = cross_validation.KFold(n, n_folds=folds, shuffle=True, random_state=None)
 
 labels = []
 for i in enumerate(class_names):
@@ -163,17 +138,19 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     tree.fit(X_train, y_train)
     y_pred = tree.predict(X_test)
 
-    # y_test and y_pred are a bit fishy..all 0.0's and 1.0's
-    conf = confusion_matrix(y_test, y_pred) # TODO: I think this is wrong...
-    # print conf3
+    conf = confusion_matrix(y_test, y_pred)
     apr = calcAPR(conf)
     totalAcc += apr[0]
     totalPrec += np.array(apr[1])
     totalRec += np.array(apr[2])
 
+print "Accuracy: {}".format(totalAcc/folds)
+print "Precision: {}".format(totalPrec/folds)
+print "Recall: {}".format(totalRec/folds)
+
 # TODO: set your best classifier below, then uncomment the following line to train it on ALL the data:
-best_classifier = None
-# best_classifier.fit(X,y)
+best_classifier = tree
+best_classifier.fit(X,y)
 
 classifier_filename='classifier.pickle'
 print("Saving best classifier to {}...".format(os.path.join(output_dir, classifier_filename)))

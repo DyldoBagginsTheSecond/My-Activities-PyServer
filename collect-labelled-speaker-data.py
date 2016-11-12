@@ -22,10 +22,18 @@ user_id = "a9.34.40.69.36.97.99.8b.3a.23"
 
 # TODO: Change the filename of the output file.
 # You should keep it in the format "speaker-data-<speaker>-#.csv"
-filename="speaker-data-peter-1.csv"
+# filename="speaker-data-other-1.csv"
 
 # TODO: Change the label to match the speaker; it must be numeric
-label = 1
+# label = 4
+
+# COLLECTED DATA INFO
+# Speaker    Label
+# ----------------
+# noSpeaker    0
+# Aditya       1
+# James        2
+# Peter        3
 
 data_dir = "data"
 
