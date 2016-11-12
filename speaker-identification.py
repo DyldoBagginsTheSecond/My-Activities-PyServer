@@ -74,7 +74,7 @@ def predict(window):
 
     # When you get a label, send it to the UI by calling onSpeakerDetected:
     # onSpeakerDetected(speaker)
-    onSpeakerDetected(listOfSpeakers[prediction[0]])
+    onSpeakerDetected(listOfSpeakers[(int)(prediction[0])])
     return
 
 
